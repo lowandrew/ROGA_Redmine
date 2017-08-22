@@ -39,6 +39,22 @@ class Automate:
                 data["geneSeekr"] = row["geneSeekrProfile"].split(";")
                 self.metadata[row["SampleName"]] = data
                 metadata_count += 1
+        # Need to look in external WGS spades as well.
+        metadata = csv.DictReader(open(self.nasmnt + "External_WGSspades/reports/combinedMetadata.csv"))
+        for row in metadata:
+            # There has to be a more elegant way to do this.
+            if row["SampleName"] in self.names:
+                data = dict()
+                data["Investigator"] = row["Investigator"]
+                data["Coverage"] = row["AverageCoverageDepth"]
+                data["TotalLength"] = row["TotalLength"]
+                data["rST"] = row["rMLSTsequenceType"]
+                data["PipelineVersion"] = row["PipelineVersion"]
+                data["MLST"] = row["MLSTsequencetype"]
+                data["geneSeekr"] = row["geneSeekrProfile"].split(";")
+                self.metadata[row["SampleName"]] = data
+                metadata_count += 1
+
 
 
         # Also need to go through the rMLST file to make sure that all rMLST genes are covered.
@@ -48,11 +64,27 @@ class Automate:
             if row["Strain"] in self.names:
                 self.metadata[row["Strain"]]["Matches"] = row["Matches"]
                 metadata_count += 1
+        # Check external runs.
+        rMLST_data = csv.DictReader(open(self.nasmnt + "External_WGSspades/reports/rmlst.csv"))
+        for row in rMLST_data:
+            if row["Strain"] in self.names:
+                self.metadata[row["Strain"]]["Matches"] = row["Matches"]
+
 
 
         # Finally, need to get info on the MLST sequence type.
         metadata_count = 0
         mlst_data = csv.DictReader(open(self.nasmnt + "WGSspades/reports/mlst.csv"))
+        for row in mlst_data:
+            if row["Strain"] in self.names:
+                mlst = list()
+                for i in range(1, 8):
+                    mlst.append(row[str(i)])
+                self.metadata[row["Strain"]]["mlst_info"] = mlst
+                metadata_count += 1
+
+        # Also from External.
+        mlst_data = csv.DictReader(open(self.nasmnt + "External_WGSspades/reports/mlst.csv"))
         for row in mlst_data:
             if row["Strain"] in self.names:
                 mlst = list()

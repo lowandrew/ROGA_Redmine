@@ -15,6 +15,14 @@ class Salmonella_Automator(Automate):
                     self.metadata[row["genome"].replace(".fasta","")]["h1"] = row["h1"]
                     self.metadata[row["genome"].replace(".fasta","")]["h2"] = row["h2"]
                     self.metadata[row["genome"].replace(".fasta","")]["serogroup"] = row["serogroup"]
+        with open(self.nasmnt + "External_WGSspades/reports/sistr.tsv") as sis:
+            sistr_data = csv.DictReader(sis, delimiter="\t")
+            for row in sistr_data:
+                if row["genome"].replace(".fasta", "") in self.names:
+                    self.metadata[row["genome"].replace(".fasta","")]["serovar"] = row["serovar"]
+                    self.metadata[row["genome"].replace(".fasta","")]["h1"] = row["h1"]
+                    self.metadata[row["genome"].replace(".fasta","")]["h2"] = row["h2"]
+                    self.metadata[row["genome"].replace(".fasta","")]["serogroup"] = row["serogroup"]
 
 
 
@@ -153,7 +161,7 @@ class Salmonella_Automator(Automate):
         para.add_run("\nQuality Control Analysis:\n\n").bold = True
         if "2666" not in self.matching_mlst:
             if len(self.metadata) == 1:
-                para.add_run("\t\u2022 This isolate des not match the")
+                para.add_run("\t\u2022 This isolate des not match the ")
             else:
                 para.add_run("\t\u2022 These isolates do not match the ")
             para.add_run("Salmonella").italic = True

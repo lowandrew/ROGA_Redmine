@@ -15,6 +15,13 @@ class VTEC_Automator(Automate):
                 serotype["O"] = row["O-type"]
                 serotype["H"] = row["H-type"]
                 self.metadata[row["Strain"]]["serotype"] = serotype
+        serotype_data = csv.DictReader(open(self.nasmnt + "External_WGSspades/reports/serotype.csv", encoding="ISO-8859-1"))
+        for row in serotype_data:
+            if row["Strain"] in self.names:
+                serotype = dict()
+                serotype["O"] = row["O-type"]
+                serotype["H"] = row["H-type"]
+                self.metadata[row["Strain"]]["serotype"] = serotype
 
     # This prints the GeneSeekr Analysis table and the Sequence Data Quality Table to the doc.
     def print_tables_to_docx(self):
