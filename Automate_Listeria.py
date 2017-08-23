@@ -29,6 +29,8 @@ class Listeria_Automator(Automate):
             # This way of doing things is really inflexible and generally not great, but it'll work for now.
             for i in range(6, 9):
                 # If the gene name was found by geneSeekr, put in a bullet, otherwise put a ND.
+                if 'hylA' in self.metadata[name]['geneSeekr']:
+                    self.metadata[name]['geneSeekr'].append('hlyA')
                 if doc.tables[2].cell(1, i).text in self.metadata[name]["geneSeekr"]:
                     Automate.add_text_to_cell(u"\u2022", j, i, doc.tables[2])
                 else:

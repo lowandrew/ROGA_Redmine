@@ -112,7 +112,7 @@ class Automate:
                     self.metadata[row[4].value]["SequencedBy"] = row[3].value
                     metadata_count += 1
 
-        except:  # Should be a file not found error - look it up.
+        except FileNotFoundError:  # Should be a file not found error - look it up.
             roga_summary = openpyxl.load_workbook("ROGA_summary_OLC.xlsx")
             # ws = roga_summary.get_sheet_by_name("ROGA_summary_OLF")
             ws = roga_summary.get_active_sheet()
