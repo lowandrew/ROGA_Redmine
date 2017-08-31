@@ -71,6 +71,18 @@ class Automate(object):
             self.access_redmine.update_status_inprogress(issue, self.botmsg)
             ##########################################################################################
             print("Run your process right here")
+            try:
+                os.remove('ROGA_summary_OLF.xlsx')
+            except FileNotFoundError:
+                pass
+            try:
+                os.remove('ROGA_summary_OLC.xlsx')
+            except FileNotFoundError:
+                pass
+            try:
+                os.remove('out.docx')
+            except FileNotFoundError:
+                pass
             excel_file = self.access_redmine.get_attached_files(issue)
             roga_type, seq_ids= roga_methods.parse_description(issue)
             roga_methods.seq_ids_to_textfile(seq_ids)
