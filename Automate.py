@@ -2,6 +2,7 @@
 
 import sys
 import datetime
+import pandas as pd
 
 class Automate:
     """
@@ -15,7 +16,6 @@ class Automate:
         Looks through combinedMetadata, rMLST and MLST data to get most of the information needed to write the ROGA.
         Stores the information in the self.metadata dictionary.
         """
-        import openpyxl
         import csv
         f = open(self.seq_id_list)
         self.names = f.readlines()
@@ -94,37 +94,33 @@ class Automate:
                 metadata_count += 1
 
         # Go through the ROGA Summary file from the access DB to get strain/textual IDs, and 1' and 2' enzymes.
-        # TODO: Make case sensitivity not matter here.
-        try: # Assume we're using ROGA summary OLF. If it isn't there, assume ROGA summary OLC
-            roga_summary = openpyxl.load_workbook("ROGA_summary_OLF.xlsx")
-            # ws = roga_summary.get_sheet_by_name("ROGA_summary_OLF")
-            ws = roga_summary.get_active_sheet()
-            metadata_count = 0
-            for row in ws.iter_rows(row_offset=1):
-                if row[4].value in self.names:
-                    self.metadata[row[4].value]["IsolateID"] = row[25].value
-                    self.metadata[row[4].value]["TextualID"] = row[24].value
-                    self.metadata[row[4].value]["1Enzyme"] = row[28].value
-                    self.metadata[row[4].value]["2Enzyme"] = row[29].value
-                    self.metadata[row[4].value]["Source"] = row[27].value
-                    self.metadata[row[4].value]["ReceivedDate"] = row[1].value
-                    self.metadata[row[4].value]["SequenceDate"] = row[2].value
-                    self.metadata[row[4].value]["SequencedBy"] = row[3].value
+        try:  # Assume we're using ROGA summary OLF. If it isn't there, assume ROGA summary OLC
+            df = pd.read_excel('ROGA_summary_OLF.xlsx')
+            for i in df.index:
+                if df['SeqTracking_SEQID'][i] in self.names:
+                    seqid = df['SeqTracking_SEQID'][i]
+                    self.metadata[seqid]["IsolateID"] = df['Isolate ID'][i]
+                    self.metadata[seqid]["TextualID"] = df['Textual ID'][i]
+                    self.metadata[seqid]["1Enzyme"] = df["1' Enzyme"][i]
+                    self.metadata[seqid]["2Enzyme"] = df["2' Enzyme"][i]
+                    self.metadata[seqid]["Source"] = df['Source'][i]
+                    self.metadata[seqid]["ReceivedDate"] = df['ReceivedDate'][i]
+                    self.metadata[seqid]["SequenceDate"] = df['SequenceDate'][i]
+                    self.metadata[seqid]["SequencedBy"] = df['SequenceBy'][i]
                     metadata_count += 1
 
+
         except FileNotFoundError:  # Should be a file not found error - look it up.
-            roga_summary = openpyxl.load_workbook("ROGA_summary_OLC.xlsx")
-            # ws = roga_summary.get_sheet_by_name("ROGA_summary_OLF")
-            ws = roga_summary.get_active_sheet()
             metadata_count = 0
-            for row in ws.iter_rows(row_offset=1):
-                if row[6].value in self.names:
-                    self.metadata[row[6].value]["IsolateID"] = row[8].value
-                    self.metadata[row[6].value]["TextualID"] = row[9].value
-                    # self.metadata[row[6].value]["Source"] = row[27].value # Seemingly not necessary for VTEC, so that's good.
-                    self.metadata[row[6].value]["ReceivedDate"] = row[10].value
-                    self.metadata[row[6].value]["SequenceDate"] = row[11].value
-                    self.metadata[row[6].value]["SequencedBy"] = row[12].value
+            df = pd.read_excel('ROGA_summary_OLC.xlsx')
+            for i in df.index:
+                if df['SeqTracking_SEQID'][i] in self.names:
+                    seqid = df['SeqTracking_SEQID'][i]
+                    self.metadata[seqid]["IsolateID"] = df['OLN ID'][i]
+                    self.metadata[seqid]["TextualID"] = df['Lab ID'][i]
+                    self.metadata[seqid]["ReceivedDate"] = df['ReceivedDate'][i]
+                    self.metadata[seqid]["SequenceDate"] = df['SequenceDate'][i]
+                    self.metadata[seqid]["SequencedBy"] = df['SequenceBy'][i]
                     metadata_count += 1
         # print(self.metadata)
         self.check_for_empty_data()
@@ -290,6 +286,7 @@ class Automate:
             if self.metadata[name]["ReceivedDate"] not in received:
                 # Add in the year.
                 try:
+                    print(self.metadata)
                     Automate.add_text_to_cell(self.metadata[name]["ReceivedDate"].strftime("%Y-%m-%d"), 1, 2, table)
                 except AttributeError:
                     Automate.add_text_to_cell(str(datetime.datetime.strptime(self.metadata[name]['ReceivedDate'], '%Y-%m-%d')), 1, 2, table)
