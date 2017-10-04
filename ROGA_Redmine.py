@@ -135,10 +135,17 @@ class Automate(object):
                 code = s.returncode
                 f.close()
 
-            self.access_redmine.redmine_api.upload_file('out.docx', issue.id,
+            try:
+                self.access_redmine.redmine_api.upload_file('out.docx', issue.id,
                                                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                                                         file_name_once_uploaded='ROGA_Report.docx')
-            os.remove('out.docx')
+                os.remove('out.docx')
+            except FileNotFoundError:
+                self.access_redmine.update_issue_to_author(issue, message='Report creation was unsuccesful. Uploading'
+                                                                          ' error traceback.')
+                self.access_redmine.redmine_api.upload_file('error.txt', issue.id,
+                                                            'text/plain',
+                                                            file_name_once_uploaded='error.txt')
             try:
                 os.remove('ROGA_summary_OLF.xlsx')
             except FileNotFoundError:
